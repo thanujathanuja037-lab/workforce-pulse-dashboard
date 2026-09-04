@@ -21,5 +21,9 @@ An interactive Power BI dashboard designed to analyze workforce data and provide
 ## Dashboard Preview
 ![Workforce Pulse Dashboard](pw1dash.png)
 
+## 🌐 Live Dashboard
+
+[🚀 View Workforce Pulse Dashboard](https://thanujathanuja037-lab.github.io/workforce-pulse-dashboard/)
+
 ## Project Objective
 To transform workforce data into an interactive and easy-to-understand dashboard that helps users identify workforce patterns and support data-driven HR decisions.
