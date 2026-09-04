@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workforce Pulse | HR Attrition Dashboard</title>
+<style>
+:root{
+  --bg:#f3f5f7; --card:#ffffff; --ink:#17232b; --muted:#71808a;
+  --accent:#315d67; --accent2:#4f7b83; --gold:#d8ad45; --line:#e5e9ec;
+  --shadow:0 8px 24px rgba(31,45,53,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Segoe UI,Arial,sans-serif}
+.shell{max-width:1280px;margin:28px auto;padding:0 18px}
+.dashboard{background:#f8f9fa;border:1px solid #e4e8eb;border-radius:18px;box-shadow:0 14px 40px rgba(24,37,45,.10);padding:18px}
+.header{
+  display:flex;justify-content:space-between;align-items:center;gap:20px;
+  background:linear-gradient(135deg,#f4e8c7,#efe2bd);border-radius:13px;
+  padding:18px 22px;margin-bottom:14px
+}
+.header h1{margin:0;font-size:25px;letter-spacing:.2px}
+.header p{margin:5px 0 0;color:#6f6a5e;font-size:12px}
+.badge{background:rgba(255,255,255,.62);border:1px solid rgba(90,78,47,.14);padding:8px 12px;border-radius:20px;font-size:11px;font-weight:600}
+.top{display:grid;grid-template-columns:1fr 1fr 260px;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.kpi{padding:18px 20px;min-height:106px;position:relative;overflow:hidden}
+.kpi:after{content:"";position:absolute;right:-24px;bottom:-35px;width:105px;height:105px;border-radius:50%;background:#315d6710}
+.kpi .label{font-size:12px;color:var(--muted);font-weight:600}
+.kpi .value{font-size:30px;font-weight:750;margin-top:9px;letter-spacing:-.7px}
+.kpi .small{font-size:10px;color:#8b979e;margin-top:5px}
+.filters{padding:16px 18px}
+.filters-title{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;margin-bottom:10px}
+.clear{border:0;background:none;color:var(--accent);font-size:10px;cursor:pointer;font-weight:700}
+.filter{display:flex;align-items:center;gap:9px;font-size:11px;margin:10px 0;cursor:pointer;color:#4d5960}
+.filter input{appearance:none;width:15px;height:15px;border:1px solid #aeb9bf;border-radius:4px;background:white;cursor:pointer}
+.filter input:checked{background:var(--accent);border-color:var(--accent);position:relative}
+.filter input:checked:after{content:"✓";color:#fff;font-size:11px;position:absolute;left:3px;top:-1px}
+.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:17px}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.title{font-size:13px;font-weight:750}.sub{font-size:10px;color:var(--muted);margin-top:3px}
+.dept-row{display:grid;grid-template-columns:145px 1fr 34px;gap:10px;align-items:center;margin:19px 0}
+.dept-name{font-size:10px;color:#526169}
+.track{height:15px;background:#edf0f2;border-radius:5px;overflow:hidden}
+.bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:5px;transition:width .3s}
+.num{text-align:right;font-size:10px;font-weight:700}
+.chart-note{font-size:9px;color:#98a2a8;margin-top:5px}
+.gender-wrap{display:flex;align-items:center;justify-content:center;gap:26px;min-height:170px}
+.donut{width:145px;height:145px;border-radius:50%;background:conic-gradient(var(--accent) 0 63.29%,var(--gold) 63.29% 100%);position:relative;flex:none}
+.donut:after{content:"";position:absolute;inset:37px;background:#fff;border-radius:50%}
+.donut-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;font-weight:800;font-size:19px}
+.legend{font-size:10px;color:#536069;line-height:2}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--accent)}
+.dot.gold{background:var(--gold)}
+.age-panel{margin-top:14px}
+.age-chart{height:300px;display:flex;align-items:flex-end;gap:4px;padding:10px 8px 25px;border-left:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden}
+.age-bar{flex:1;min-width:6px;max-width:16px;background:linear-gradient(180deg,var(--accent2),var(--accent));border-radius:4px 4px 0 0;opacity:.92;transition:transform .15s}
+.age-bar:hover{transform:translateY(-4px);opacity:1}
+.axis{display:flex;justify-content:space-between;color:#98a2a8;font-size:9px;margin-top:7px;padding:0 5px}
+.footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px;color:#87939a;font-size:9px}
+@media(max-width:900px){
+ .top,.grid{grid-template-columns:1fr}.gender-wrap{justify-content:flex-start}
+}
+@media(max-width:560px){
+ .header{align-items:flex-start;flex-direction:column}.dept-row{grid-template-columns:105px 1fr 28px}.dashboard{padding:12px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="dashboard">
+  <header class="header">
+    <div>
+      <h1>Workforce Pulse — HR Attrition Dashboard</h1>
+      <p>Workforce overview • Attrition analysis • Department & demographic insights</p>
+    </div>
+    <div class="badge">HR ANALYTICS</div>
+  </header>
+
+  <section class="top">
+    <div class="card kpi">
+      <div class="label">Total Employees</div>
+      <div class="value">1.47K</div>
+      <div class="small">Overall workforce</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Attrition Count</div>
+      <div class="value">237</div>
+      <div class="small">Employees who left</div>
+    </div>
+    <div class="card filters">
+      <div class="filters-title"><span>Department</span><button class="clear" onclick="clearFilters()">Clear</button></div>
+      <label class="filter"><input type="checkbox" value="Human Resources">Human Resources</label>
+      <label class="filter"><input type="checkbox" value="Research & Development">Research & Development</label>
+      <label class="filter"><input type="checkbox" value="Sales">Sales</label>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="panel">
+      <div class="panel-head"><div><div class="title">Attrition Count</div><div class="sub">by Department</div></div></div>
+      <div id="deptChart"></div>
+      <div class="chart-note">Default values match the Power BI dashboard.</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div><div class="title">Attrition Count</div><div class="sub">by Gender</div></div></div>
+      <div class="gender-wrap">
+        <div class="donut"><div class="donut-center">237</div></div>
+        <div class="legend">
+          <div><span class="dot"></span>Male&nbsp; 150 (63.29%)</div>
+          <div><span class="dot gold"></span>Female&nbsp; 87 (36.71%)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel age-panel">
+    <div class="panel-head">
+      <div><div class="title">Attrition Count</div><div class="sub">by Age</div></div>
+      <div class="sub">Age distribution</div>
+    </div>
+    <div class="age-chart" id="ageChart"></div>
+    <div class="axis"><span>20</span><span>25</span><span>30</span><span>35</span><span>40</span><span>45</span><span>50</span><span>55</span></div>
+  </section>
+
+  <div class="footer">
+    <span>Workforce Pulse Dashboard</span>
+    <span>Interactive portfolio web version</span>
+  </div>
+</div>
+</div>
+
+<script>
+const departments=[
+  ["Research & Development",130],
+  ["Sales",90],
+  ["Human Resources",12]
+];
+const ages=[3,4,5,4,6,4,7,3,8,5,6,4,9,10,12,11,14,16,12,10,7,6,5,4,8,7,6,5,4,3,5,7,6,5,4,4,3,3,4,5,4,3,3,2,2,3,4,5,4,3];
+
+function render(selected=[]){
+  const rows=selected.length ? departments.filter(d=>selected.includes(d[0])) : departments;
+  const max=130;
+  document.getElementById("deptChart").innerHTML=rows.map(d=>`
+    <div class="dept-row">
+      <div class="dept-name">${d[0]}</div>
+      <div class="track"><div class="bar" style="width:${d[1]/max*100}%"></div></div>
+      <div class="num">${d[1]}</div>
+    </div>`).join("");
+}
+function clearFilters(){
+  document.querySelectorAll(".filter input").forEach(i=>i.checked=false);
+  render();
+}
+document.querySelectorAll(".filter input").forEach(i=>i.addEventListener("change",()=>{
+  const selected=[...document.querySelectorAll(".filter input:checked")].map(i=>i.value);
+  render(selected);
+}));
+document.getElementById("ageChart").innerHTML=ages.map((v,i)=>`
+  <div class="age-bar" title="Age group point ${i+1}: ${v}" style="height:${v/16*92}%"></div>`).join("");
+render();
+</script>
+</body>
+</html>
