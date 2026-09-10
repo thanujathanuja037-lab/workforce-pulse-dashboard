@@ -9,7 +9,7 @@ df = pd.read_csv(csv_file)
 print("Rows:", len(df))
 
 # MySQL password
-password = quote_plus("Mysql@24")
+password = quote_plus("yourpassword")
 
 # Create MySQL connection
 engine = create_engine(
